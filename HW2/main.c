@@ -1,7 +1,7 @@
-#include <stdio.h> //Standard I/O Çì´õ
-#include <wiringPi.h> //wiringPi Çì´õ
-#include <stdlib.h> //³­¼ö »ı¼ºÀ» À§ÇÑ Çì´õ
-#include <time.h> //¸Å¹ø ´Ù¸¥ ³­¼ö¸¦ »ı¼ºÇÏ±â À§ÇÔ°ú 0.5ÃÊ, 1ÃÊ ½Ã°£°£°İÀ» ÃøÁ¤ÇÏ±âÀ§ÇÔ
+#include <stdio.h> //Standard I/O í—¤ë”
+#include <wiringPi.h> //wiringPi í—¤ë”
+#include <stdlib.h> //ë‚œìˆ˜ ìƒì„±ì„ ìœ„í•œ í—¤ë”
+#include <time.h> //ë§¤ë²ˆ ë‹¤ë¥¸ ë‚œìˆ˜ë¥¼ ìƒì„±í•˜ê¸° ìœ„í•¨ê³¼ 0.5ì´ˆ, 1ì´ˆ ì‹œê°„ê°„ê²©ì„ ì¸¡ì •í•˜ê¸°ìœ„í•¨
 
 //OUTPUT pin numbers
 #define LED_RED 18
@@ -13,11 +13,11 @@
 #define BTN_GREEN 22
 #define BTN_BLUE 23
 
-//¹İº¹µÇ´Â °ÔÀÓÀÇ °úÁ¤À» ÇÔ¼ö·Î ±¸Çö
+//ë°˜ë³µë˜ëŠ” ê²Œì„ì˜ ê³¼ì •ì„ í•¨ìˆ˜ë¡œ êµ¬í˜„
 int game(int* led_index, int* score, int* missCount);
 
 void main() {
-	//¸Å¹ø ´Ù¸¥ ³­¼ö¸¦ »ı¼ºÇÏ±â À§ÇÔ
+	//ë§¤ë²ˆ ë‹¤ë¥¸ ë‚œìˆ˜ë¥¼ ìƒì„±í•˜ê¸° ìœ„í•¨
 	srand((unsigned int)time(NULL));
 
 	//Setup & Initialize GPIO
@@ -32,17 +32,17 @@ void main() {
 	int score = 0;
 	int miss_count = 0;
 
-	//ÆíÀÇ»ó red¸¦ 1¹ø, greenÀ» 2¹ø, blue¸¦ 3¹ø led·Î ºÎ¸£°Ú´Ù
-	//¿¬¼ÓÀ¸·Î µ¿ÀÏÇÑ LED°¡ Á¡µîµÇÁö ¾Êµµ·Ï ÇÏ±âÀ§ÇØ
-	//ÀÌÀü¿¡ ¾î¶² LED¿¡ Á¡µîµÆ¾ú´ÂÁö ÀúÀå
-	//0Àº Á¡µîµÇÁö ¾ÊÀº LED, 1Àº Á¡µîµÈ LED
+	//í¸ì˜ìƒ redë¥¼ 1ë²ˆ, greenì„ 2ë²ˆ, blueë¥¼ 3ë²ˆ ledë¡œ ë¶€ë¥´ê² ë‹¤
+	//ì—°ì†ìœ¼ë¡œ ë™ì¼í•œ LEDê°€ ì ë“±ë˜ì§€ ì•Šë„ë¡ í•˜ê¸°ìœ„í•´
+	//ì´ì „ì— ì–´ë–¤ LEDì— ì ë“±ëì—ˆëŠ”ì§€ ì €ì¥
+	//0ì€ ì ë“±ë˜ì§€ ì•Šì€ LED, 1ì€ ì ë“±ëœ LED
 	int led_index[3] = { 0, };
 
 
-	//Ã¹ ½ÃÇà¸¸ 1~3±îÁöÀÇ ³­¼ö¸¦ »ı¼ºÇÏ¹Ç·Î
-	//¹İº¹¹® ¹Û¿¡¼­ ¸ÕÀú Ã³¸®ÇØÁÜ
+	//ì²« ì‹œí–‰ë§Œ 1~3ê¹Œì§€ì˜ ë‚œìˆ˜ë¥¼ ìƒì„±í•˜ë¯€ë¡œ
+	//ë°˜ë³µë¬¸ ë°–ì—ì„œ ë¨¼ì € ì²˜ë¦¬í•´ì¤Œ
 	led_index[rand() % 3] = 1;
-	//game ÇÔ¼ö¿¡ »ı¼ºµÈ led_index Àü´Ş
+	//game í•¨ìˆ˜ì— ìƒì„±ëœ led_index ì „ë‹¬
 	int first_round = game(led_index, &score, &miss_count);
 
 	if (first_round) {
@@ -51,12 +51,12 @@ void main() {
 	else {
 		printf("MissCount: %d", miss_count);
 	}
-	//°ÔÀÓÀÌ Á¾·áµÉ ¶§ ±îÁö ¹İº¹
+	//ê²Œì„ì´ ì¢…ë£Œë  ë•Œ ê¹Œì§€ ë°˜ë³µ
 	while (1) {
-		//µÎ¹øÂ° ½ÃÇàºÎÅÍ´Â 1~2±îÁöÀÇ ³­¼ö¸¦ »ı¼º
-		int random = rand() % 2; //0¶Ç´Â 1
+		//ë‘ë²ˆì§¸ ì‹œí–‰ë¶€í„°ëŠ” 1~2ê¹Œì§€ì˜ ë‚œìˆ˜ë¥¼ ìƒì„±
+		int random = rand() % 2; //0ë˜ëŠ” 1
 
-		//ÀÌÀü led_index¿¡¼­ 1À» 0À¸·Î ¹Ù²ãÁÖ°í ³­¼ö °ª¿¡ µû¶ó ÀÌÀü¿¡ Á¡µîµÇÁö ¾ÊÀº µÎ°³ÀÇ LEDÁß ÇÏ³ªÀÇ °ªÀ» 1·Î º¯°æ
+		//ì´ì „ led_indexì—ì„œ 1ì„ 0ìœ¼ë¡œ ë°”ê¿”ì£¼ê³  ë‚œìˆ˜ ê°’ì— ë”°ë¼ ì´ì „ì— ì ë“±ë˜ì§€ ì•Šì€ ë‘ê°œì˜ LEDì¤‘ í•˜ë‚˜ì˜ ê°’ì„ 1ë¡œ ë³€ê²½
 		if (led_index[0] == 1) {
 			led_index[0] = 0;
 			led_index[random + 1] = 1;
@@ -75,7 +75,7 @@ void main() {
 			led_index[random] = 1;
 		}
 
-		//game ÇÔ¼ö¿¡ »ı¼ºµÈ led_index Àü´Ş
+		//game í•¨ìˆ˜ì— ìƒì„±ëœ led_index ì „ë‹¬
 		int result = game(led_index, &score, &miss_count);
 
 		if (result==1) {
@@ -123,18 +123,18 @@ int game(int* led_index, int* score, int* miss_count) {
 	}
 
 
-	//LED Á¡µî
+	//LED ì ë“±
 	digitalWrite(random_led, HIGH);
 
 	clock_t half_second_passed = clock() + 0.5 * CLOCKS_PER_SEC;
 	clock_t one_second_passed = clock() + CLOCKS_PER_SEC;
-	//0.5ÃÊ ¾È¿¡ ÇØ´çÇÏ´Â ¹öÆ°À» ´©¸£¸é ¼º°øÀ¸·Î ÆÇ´Ü
+	//0.5ì´ˆ ì•ˆì— í•´ë‹¹í•˜ëŠ” ë²„íŠ¼ì„ ëˆ„ë¥´ë©´ ì„±ê³µìœ¼ë¡œ íŒë‹¨
 	while (clock()<half_second_passed) {
 		int BTN_RED_ON = digitalRead(BTN_RED);
 		int BTN_GREEN_ON = digitalRead(BTN_GREEN);
 		int BTN_BLUE_ON = digitalRead(BTN_BLUE);
 
-		//¾î¶² ½ºÀ§Ä¡°¡ ÇÑ¹ø ´­¸®¸é while¹® break
+		//ì–´ë–¤ ìŠ¤ìœ„ì¹˜ê°€ í•œë²ˆ ëˆŒë¦¬ë©´ whileë¬¸ break
 		if (BTN_RED_ON || BTN_GREEN_ON || BTN_BLUE_ON) {
 			if (BTN_RED_ON) {
 				pressed_switch = BTN_RED;
@@ -152,21 +152,21 @@ int game(int* led_index, int* score, int* miss_count) {
 		}
 	}
 
-	//Á¡µî°£°İ 1ÃÊ°¡ Áö³¯¶§±îÁö ´ë±â
+	//ì ë“±ê°„ê²© 1ì´ˆê°€ ì§€ë‚ ë•Œê¹Œì§€ ëŒ€ê¸°
 	while (clock() < one_second_passed) {
 	}
 
-	//¼º°øÇßÀ¸¸é 1, ½ÇÆĞÇßÀ¸¸é 0À» ¹İÈ¯
-	if (pressed_switch == 0) { //¹öÆ°À» ´©¸£Áö ¾Ê°Å³ª 0.5ÃÊ ÀÌÈÄ¿¡ ¹öÆ°ÀÌ ´­¸°°æ¿ì
+	//ì„±ê³µí–ˆìœ¼ë©´ 1, ì‹¤íŒ¨í–ˆìœ¼ë©´ 0ì„ ë°˜í™˜
+	if (pressed_switch == 0) { //ë²„íŠ¼ì„ ëˆ„ë¥´ì§€ ì•Šê±°ë‚˜ 0.5ì´ˆ ì´í›„ì— ë²„íŠ¼ì´ ëˆŒë¦°ê²½ìš°
 		*miss_count++;
 		printf("No BUTTON pushed ");
 		return 0;
 	}
-	else if (pressed_switch == target_switch) { //Á¤´ä ¹öÆ° ´©¸¥°æ¿ì
+	else if (pressed_switch == target_switch) { //ì •ë‹µ ë²„íŠ¼ ëˆ„ë¥¸ê²½ìš°
 		*score++;
 		return 1;
 	}
-	else { //¿À´ä ¹öÆ° ´©¸¥°æ¿ì
+	else { //ì˜¤ë‹µ ë²„íŠ¼ ëˆ„ë¥¸ê²½ìš°
 		*miss_count;
 		return 0;
 	}
