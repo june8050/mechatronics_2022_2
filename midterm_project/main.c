@@ -163,7 +163,7 @@ int main() {
 	{
 		printf("%d trail ----------------------------------------\n",count);
 		referencePosition = target[count] - currentPosition;
-		redGearPosition = currentPosition;
+		redGearPosition = 0; // regress redGearPosition to referencePosition
 		errorPosition = referencePosition - redGearPosition;
 		
 		float errorSum = 0;
