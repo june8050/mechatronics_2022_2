@@ -1,0 +1,144 @@
+#include <stdio.h>
+#include <wiringPi.h>
+#include <softPwm.h>
+
+//define requried things
+#define LOOPTIME 5 //sampling time
+#define ENCODERA 17 //Hall Sensor A
+#define ENCODERB 27  //Hall Sensor B
+#define ENC2REDGEAR 216
+
+
+#define MOTOR1 19 //GPIO19
+#define MOTOR2 26 //GPIO26
+
+#define PGAIN 10
+#define IGAIN 0
+#define DGAIN 0
+
+#define PULSEINPUT 18 //pulse
+
+// initialize
+int encA;
+int encB;
+int encoderPosition = 0;
+float redGearPosition = 0;
+
+
+float referencePosition = 0;
+float errorPosition = 0;
+
+unsigned int checkTime;
+unsigned int checkTimeBefore;
+
+
+void funcEncoderA() //encoder position
+{
+   encA = digitalRead(ENCODERA);
+   encB = digitalRead(ENCODERB);
+   if (encA == HIGH)
+   {
+      if (encB == LOW) encoderPosition++;
+      else encoderPosition--;
+   }
+   else
+   {
+      if (encB == LOW) encoderPosition--;
+      else encoderPosition++;
+   }
+   redGearPosition = (float)encoderPosition / ENC2REDGEAR;
+   errorPosition = referencePosition - redGearPosition;
+}
+void funcEncoderB() //encoder position 
+{
+   encA = digitalRead(ENCODERA);
+   encB = digitalRead(ENCODERB);
+   if (encB == HIGH)
+   {
+      if (encA == LOW) encoderPosition--;
+      else encoderPosition++;
+   }
+   else
+   {
+      if (encA == LOW) encoderPosition++;
+      else encoderPosition--;
+   }
+   redGearPosition = (float)encoderPosition / ENC2REDGEAR;
+   errorPosition = referencePosition - redGearPosition;
+}
+
+
+void MoterReady()
+{
+
+   while (!encA && !encB) {
+      softPwmWrite(MOTOR1, 10);
+   } 
+
+   errorPosition = 0;
+   encoderPosition = 0;
+   redGearPosition = 0;
+   printf("Motor ready!\n");
+}
+
+
+int main() {
+   wiringPiSetupGpio();
+   pinMode(ENCODERA, INPUT);      // Set ENCODERA as input
+   pinMode(ENCODERB, INPUT);      // Set ENCODERB as input
+
+   pinMode(PULSEINPUT, INPUT);     // Set PulseInput as input
+
+   softPwmCreate(MOTOR1, 0, 100);      // Create soft Pwm
+   softPwmCreate(MOTOR2, 0, 100);       // Create soft Pwm
+
+   wiringPiISR(ENCODERA, INT_EDGE_BOTH, funcEncoderA); 
+   wiringPiISR(ENCODERB, INT_EDGE_BOTH, funcEncoderB);
+
+   MoterReady();
+
+   
+   printf("Write total number of trials : ");
+   int total;
+   scanf("%d", &total);
+   while (total > 10) {
+      printf("Error : Please write total number of trials below 10 : ");
+      scanf("%d", &total);
+   }
+   printf("Total number of trials : %d\n", total);
+   int target[total];
+   for (int i = 0; i < total; ++i) {
+      printf("Write %d th target location : ", i + 1);
+      scanf("%d", &target[i]);
+   }
+   int count = 0;
+   float currentPosition = 0;
+   
+   while (count < total)
+   {
+      referencePosition = target[count] - currentPosition;
+      redGearPosition = currentPosition;
+      errorPosition = referencePosition - redGearPosition;
+      printf("%f\n",errorPosition);
+      
+      while (errorPosition < 0.1 && errorPosition > -0.1)
+      {
+
+         if (errorPosition > 0)
+         {
+            softPwmWrite(MOTOR1, errorPosition * PGAIN);  
+            softPwmWrite(MOTOR2, 0);
+         }
+         else
+         {
+            softPwmWrite(MOTOR2, -errorPosition * PGAIN); 
+            softPwmWrite(MOTOR1, 0);
+         }
+      }
+      currentPosition = target[count];
+      count++;
+}
+   
+   
+   return 0;
+}
