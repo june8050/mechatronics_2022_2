@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <wiringPi.h>
 #include <softPwm.h>
@@ -41,12 +42,12 @@ void funcEncoderA() //encoder position
 		if (encB == LOW)
 		{
 			encoderPosition++;
-			printf("CW");
+			//printf("CW");
 		}
 		else
 		{
 			encoderPosition--;
-			printf("CCW");
+			//printf("CCW");
 		}
 	}
 	else
@@ -54,17 +55,17 @@ void funcEncoderA() //encoder position
 		if (encB == LOW)
 		{
 			encoderPosition--;
-			printf("CCW");
+			//printf("CCW");
 		}
 		else
 		{
 			encoderPosition++;
-			printf("CW");
+			//printf("CW");
 		}
 	}
 	redGearPosition = (float)encoderPosition / ENC2REDGEAR;
 	errorPosition = referencePosition - redGearPosition;
-	printf("encoderPosition : %d / redGearPosition : %f / errorPosition : %f\n", encoderPosition, redGearPosition, errorPosition);
+	//printf("referencePos : %f / redGearPos : %f / errorPos : %f\n", referencePosition, redGearPosition, errorPosition);
 }
 void funcEncoderB() //encoder position 
 {
@@ -75,12 +76,12 @@ void funcEncoderB() //encoder position
 		if (encA == LOW)
 		{
 			encoderPosition--;
-			printf("CCW");
+			//printf("CCW");
 		}
 		else
 		{
 			encoderPosition++;
-			printf("CW");
+			//printf("CW");
 		}
 	}
 	else
@@ -88,17 +89,17 @@ void funcEncoderB() //encoder position
 		if (encA == LOW)
 		{
 			encoderPosition++;
-			printf("CW");
+			//printf("CW");
 		}
 		else
 		{
 			encoderPosition--;
-			printf("CCW");
+			//printf("CCW");
 		}
 	}
 	redGearPosition = (float)encoderPosition / ENC2REDGEAR;
 	errorPosition = referencePosition - redGearPosition;
-	printf("encoderPosition : %d / redGearPosition : %f / errorPosition : %f\n", encoderPosition, redGearPosition, errorPosition);
+	//printf("referencePos : %f / redGearPos : %f / errorPos : %f\n", referencePosition, redGearPosition, errorPosition);
 }
 
 
@@ -121,10 +122,12 @@ void MoterReady()
 
 
 int main() {
+	FILE  *fp;
+	fp = fopen( "test.txt", "w");
+	
 	wiringPiSetupGpio();
 	pinMode(ENCODERA, INPUT);		// Set ENCODERA as input
 	pinMode(ENCODERB, INPUT);		// Set ENCODERB as input
-
 	pinMode(PULSEINPUT, INPUT);     // Set PulseInput as input
 
 	softPwmCreate(MOTOR1, 0, 100);		// Create soft Pwm
@@ -151,23 +154,31 @@ int main() {
 	}
 	int count = 0;
 	float currentPosition = 0;
-
+	int pulse = 0;
+	while (!pulse){
+		pulse = digitalRead(PULSEINPUT);
+		}
+	int helper = 0;
 	while (count < total)
 	{
+		printf("%d trail ----------------------------------------\n",count);
 		referencePosition = target[count] - currentPosition;
 		redGearPosition = currentPosition;
 		errorPosition = referencePosition - redGearPosition;
-		printf("%f\n", errorPosition);
-
+		
 		float errorSum = 0;
 		float previousError = errorPosition;
 
 		unsigned int checkTimeBefore = millis();
-
-		while (errorPosition > 0.1 || errorPosition < -0.1)
+		pulse = 0;
+		while (1)
 		{
-			//printf("%f\n",errorPosition);
-
+			pulse = digitalRead(PULSEINPUT);
+			if (pulse && errorPosition < 0.1 && errorPosition > -0.1){
+				break;
+			}
+			
+			/*
 			unsigned int checkTime = millis();
 			float deltaTime = (float) (checkTime - checkTimeBefore)/1000;
 
@@ -176,15 +187,23 @@ int main() {
 			float derivativeError = (errorPosition - previousError) / deltaTime;
 
 			float controlledPWM = PGAIN * errorPosition + IGAIN * errorSum + DGAIN * derivativeError;
+			*/
+			
+			if (helper % 10000 == 0) {
+			fprintf( fp, "referencePos : %f / redGearPos : %f / errorPos : %f\n", referencePosition, redGearPosition, errorPosition );
 
+			printf("referencePos : %f / redGearPos : %f / errorPos : %f\n", referencePosition, redGearPosition, errorPosition);
+			}
+			helper++;
+			
 			if (errorPosition > 0)
 			{
-				softPwmWrite(MOTOR1, controlledPWM);
+				softPwmWrite(MOTOR1, errorPosition * PGAIN);
 				softPwmWrite(MOTOR2, 0);
 			}
 			else
 			{
-				softPwmWrite(MOTOR2, -controlledPWM);
+				softPwmWrite(MOTOR2, -errorPosition * PGAIN);
 				softPwmWrite(MOTOR1, 0);
 			}
 
@@ -195,7 +214,8 @@ int main() {
 		currentPosition = target[count];
 		count++;
 	}
-
+	
+			fclose(fp);
 
 	return 0;
 }
