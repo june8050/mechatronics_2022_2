@@ -1,20 +1,21 @@
-#include <stdio.h>
-#include <wiringPi.h>
+#include <stdio.h> 
+#include <wiringPi.h> 
 #include <softPwm.h>
 
 //define requried things
 #define ENCODERA 17 //Hall Sensor A
 #define ENCODERB 27  //Hall Sensor B
-#define ENC2REDGEAR 216
+#define ENC2REDGEAR 216 // 1 rotation of Motor = 216 Edge
 
 
-#define MOTOR1 19 //GPIO19
-#define MOTOR2 26 //GPIO26
+#define MOTOR1 19 //use GPIO19
+#define MOTOR2 26 //use GPIO26
 
-#define PGAIN 1000
+//hyper-parameters we set for PID control
+#define PGAIN 1000 
 #define IGAIN 0.2
 #define DGAIN 100
-#define PULSEINPUT 18 //pulse
+#define PULSEINPUT 18 //To get pulse 
 
 #define SAMPLING_PERIOD 1 //millisecond
 
@@ -24,10 +25,11 @@ int encB;
 int encoderPosition = 0;
 float redGearPosition = 0;
 
-
+// measure the position; reference means how many rotation the motor has at previous target position to reach the target position and error means error between current positon and target position. we use the error when we control the motor
 float referencePosition = 0;
 float errorPosition = 0;
 
+// speed of interpreting codes > speed of controling the motor. we need enough time to control the motor
 unsigned int checkTime;
 unsigned int checkTimeBefore;
 
@@ -86,7 +88,7 @@ void funcEncoderB() //encoder position
 			encoderPosition--;
 		}
 	}
-	redGearPosition = (float)encoderPosition / ENC2REDGEAR;
+	redGearPosition = (float)encoderPosition / ENC2REDGEAR; // encoderposition is represented in edge dimension, so we need to convert the edge dimension to rotation of motor dimension
 	errorPosition = referencePosition - redGearPosition;
 }
 
@@ -126,22 +128,22 @@ int main() {
 	printf("Write total number of trials : ");
 	int total;
 	scanf("%d", &total);
-	while (total > 10) {
+	while (total > 10) { // number of trial must be less than 10
 		printf("Error : Please write total number of trials below 10 : ");
 		scanf("%d", &total);
 	}
 	printf("Total number of trials : %d\n", total);
 
-	int target[total];
+	int target[total]; // array for target position.
 
 	for (int i = 0; i < total; ++i) {
 		printf("Write %d th target location : ", i + 1);
-		scanf("%d", &target[i]);
+		scanf("%d", &target[i]); // indexing for ith element in array and allocate the ith target position to it
 	}
 
-	int count = 0;
-	float currentPosition = 0;
-	int pulse = 0;
+	int count = 0; // to end the loop when all trials done
+	float currentPosition = 0; //help variable for reference position
+	int pulse = 0; // the pulse injecting time is longer than we thought
 
 	while (!pulse) {
 		pulse = digitalRead(PULSEINPUT);
@@ -221,7 +223,6 @@ int main() {
 		count++;
 	}
 
-	fclose(fp);
 
 	return 0;
 }
