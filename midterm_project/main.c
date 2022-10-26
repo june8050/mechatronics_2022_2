@@ -146,48 +146,48 @@ int main() {
 	int pulse = 0; // the pulse injecting time is longer than we thought
 
 	while (!pulse) {
-		pulse = digitalRead(PULSEINPUT); // Wait for starting
+		pulse = digitalRead(PULSEINPUT); // Wait for pulse signal to start
 	}
 
 	while (count < total) 
 	{
-		unsigned int checkTimeBefore = millis();
-		unsigned int checkTimeBefore4last = 0;
+		unsigned int checkTimeBefore = millis(); //timestamp for sampling period
+		unsigned int checkTimeBefore4last = 0; //timetamp for shutting down after last trial
 
 		printf("%d trial ----------------------------------------\n", count + 1);
-		referencePosition = target[count] - currentPosition;
-		redGearPosition = 0; // regress redGearPosition to referencePosition
-		encoderPosition=0;
-		errorPosition = referencePosition;
+		referencePosition = target[count] - currentPosition; //target number of rotation in current trial
+		redGearPosition = 0; // reset redGearPosition to 0
+		encoderPosition=0; // reset encoderPosition to 0
+		errorPosition = referencePosition; // as long as start position is reset to 0, error at the beginning equals to target number of rotation
 
-		float errorSum = 0;
-		float previousError = errorPosition;
+		float errorSum = 0; // integral component for I gain control
+		float previousError = errorPosition; // to calculate differential error for D gain control
 
-		pulse = 0;
+		pulse = 0; // 1 when receive pulse input, 0 when receive no pulse input
 
-		int pulseOn = 1;
+		int pulseOn = 1; // 1 if there was pulse input before, 0 if there was no pulse input before
 
-		//for Program to end after 5secs in last trial
+		//leave timestamp when it`s last trial in order to shut down program 5sec after last period ends
 		if (count == total - 1) {
 			checkTimeBefore4last = millis();
 		}
 
-		// control the motor until next pulse is injected
 		while (1)
 		{
 			pulse = digitalRead(PULSEINPUT);
-
+			
+			// when receive pulse signal while there were no pulse signal before, consider it as next pulse came in, move on to next trial
 			if ( !pulseOn && pulse ) {
 				break;
 			}
 
-			if (pulse) pulseOn = 1;
-			else if (!pulse) pulseOn = 0;
+			if (pulse) pulseOn = 1; //if pulse signal came in this time, pulseOn = 1
+			else if (!pulse) pulseOn = 0; //if pulse signal did not came in this time, pulseOn = 0
 
-			unsigned int checkTime = millis();
-
+			unsigned int checkTime = millis(); //current time stamp
+				
+			//run control every sampling period which is 0.1sec
 			if (checkTime - checkTimeBefore >= SAMPLING_PERIOD) {
-
 
 				float deltaTime = (float)SAMPLING_PERIOD / 1000;
 
