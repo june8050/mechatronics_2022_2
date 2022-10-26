@@ -8,8 +8,8 @@
 #define ENC2REDGEAR 216 // 1 rotation of Motor = 216 Edge
 
 
-#define MOTOR1 19 //use GPIO19
-#define MOTOR2 26 //use GPIO26
+#define MOTOR1 19 //use GPIO19 pin
+#define MOTOR2 26 //use GPIO26 pin
 
 //hyper-parameters we set for PID control
 #define PGAIN 1000 
@@ -35,32 +35,32 @@ unsigned int checkTimeBefore;
 
 void funcEncoderA() //encoder position
 {
-	encA = digitalRead(ENCODERA);
+	encA = digitalRead(ENCODERA); // if edge detected, function A and B are excuted. We use two hall sensor to recognize the direction of motor's rotation
 	encB = digitalRead(ENCODERB);
 	if (encA == HIGH)
 	{
 		if (encB == LOW)
 		{
-			encoderPosition++;
+			encoderPosition++; // ClockWise direction 
 		}
 		else
 		{
-			encoderPosition--;
+			encoderPosition--; // Counter ClockWise direction
 		}
 	}
 	else
 	{
 		if (encB == LOW)
 		{
-			encoderPosition--;
+			encoderPosition--; // Counter ClockWise direction
 		}
 		else
 		{
-			encoderPosition++;
+			encoderPosition++; // ClockWise direction
 		}
 	}
-	redGearPosition = (float)encoderPosition / ENC2REDGEAR;
-	errorPosition = referencePosition - redGearPosition;
+	redGearPosition = (float)encoderPosition / ENC2REDGEAR; // encoderposition is represented in edge dimension, so we need to convert the edge dimension to rotation of motor dimension
+	errorPosition = referencePosition - redGearPosition; // Calculate error
 }
 void funcEncoderB() //encoder position 
 {
@@ -92,14 +92,14 @@ void funcEncoderB() //encoder position
 	errorPosition = referencePosition - redGearPosition;
 }
 
-//To make the control process more precise, 
+//To make the control process more precise, initialize the motor to locate the edge!
 void MoterReady()
 {
 
 	while (1) {
 		softPwmWrite(MOTOR1, 50);
 		softPwmWrite(MOTOR2, 0);
-		if (encA == HIGH || encB == LOW || encA == HIGH || encB == LOW) {
+		if (encA == HIGH || encB == LOW || encA == HIGH || encB == LOW) { //At begining, There were nothing in enc A and B. if edge detected, then functionA is excuted and encA,B have value. we use these!
 			softPwmWrite(MOTOR1, 0);
 			break;
 		}
@@ -120,15 +120,15 @@ int main() {
 	softPwmCreate(MOTOR1, 0, 100);		// Create soft Pwm
 	softPwmCreate(MOTOR2, 0, 100); 		// Create soft Pwm
 
-	wiringPiISR(ENCODERA, INT_EDGE_BOTH, funcEncoderA);
-	wiringPiISR(ENCODERB, INT_EDGE_BOTH, funcEncoderB);
+	wiringPiISR(ENCODERA, INT_EDGE_BOTH, funcEncoderA); // if Edge detected, functionA automaticly excuted
+	wiringPiISR(ENCODERB, INT_EDGE_BOTH, funcEncoderB); // if Edge detected, functionB automaticly excuted
 
-	MoterReady();
+	MoterReady(); //Motor in edge for precise control
 
 	printf("Write total number of trials : ");
-	int total;
+	int total; // total number of trials 
 	scanf("%d", &total);
-	while (total > 10) { // number of trial must be less than 10
+	while (total > 10) { // number of trial must be less than or equal to 10
 		printf("Error : Please write total number of trials below 10 : ");
 		scanf("%d", &total);
 	}
@@ -138,7 +138,7 @@ int main() {
 
 	for (int i = 0; i < total; ++i) {
 		printf("Write %d th target location : ", i + 1);
-		scanf("%d", &target[i]); // indexing for ith element in array and allocate the ith target position to it
+		scanf("%d", &target[i]); // indexing ith element in array and allocating the ith target position to it
 	}
 
 	int count = 0; // to end the loop when all trials done
@@ -146,10 +146,10 @@ int main() {
 	int pulse = 0; // the pulse injecting time is longer than we thought
 
 	while (!pulse) {
-		pulse = digitalRead(PULSEINPUT);
+		pulse = digitalRead(PULSEINPUT); // Wait for starting
 	}
 
-	while (count < total)
+	while (count < total) 
 	{
 		unsigned int checkTimeBefore = millis();
 		unsigned int checkTimeBefore4last = 0;
@@ -167,12 +167,12 @@ int main() {
 
 		int pulseOn = 1;
 
-		//마지막 시행에서 5초 뒤 프로그램 종료하기 위함
+		//for Program to end after 5secs in last trial
 		if (count == total - 1) {
 			checkTimeBefore4last = millis();
 		}
 
-		//각 시행에 대해 새로운 펄스 들어올때 까지 제어 실행
+		// control the motor until next pulse is injected
 		while (1)
 		{
 			pulse = digitalRead(PULSEINPUT);
@@ -219,8 +219,8 @@ int main() {
 				checkTimeBefore = checkTime;
 			}
 		}
-		currentPosition = target[count];
-		count++;
+		currentPosition = target[count]; // 
+		count++; //for while loop escape condition. End if all trials done
 	}
 
 
