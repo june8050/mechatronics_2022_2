@@ -14,8 +14,9 @@ We learned
 
 ---
 ## Playing with LED
-
 **Mole Game**  
+*Source Code : HW2*  
+
 Using Raspberry PI and LED, we play mole game!!
 
 
@@ -23,6 +24,8 @@ Using Raspberry PI and LED, we play mole game!!
 
 ---
 ## PID Control
+**Motor Control**  
+*Source Code : MidetermProject*  
 
 ![image](https://user-images.githubusercontent.com/92682815/197922939-996bd995-cd49-428a-98c9-ff20464ae844.png)
 
