@@ -167,7 +167,7 @@ int main() {
 
 		int pulseOn = 1; // 1 if there was pulse input before, 0 if there was no pulse input before
 
-		//leave timestamp when it`s last trial in order to shut down program 5sec after last period ends
+		//leave timestamp when it`s last trial in order to shut down program after 5sec of last control
 		if (count == total - 1) {
 			checkTimeBefore4last = millis();
 		}
@@ -188,15 +188,20 @@ int main() {
 				
 			//run control every sampling period which is 0.1sec
 			if (checkTime - checkTimeBefore >= SAMPLING_PERIOD) {
-
+				
+				//convert time gap between sampling periods into sec
 				float deltaTime = (float)SAMPLING_PERIOD / 1000;
-
+				
+				//accumulate deltaTime * errorPosition for I-control
 				errorSum += deltaTime * errorPosition;
-
+				
+				//calculate differential error for D-control
 				float differentialError = (errorPosition - previousError) / deltaTime;
-
+				
+				//Integrate 3 control factors together
 				float controlledPWM = PGAIN * errorPosition + IGAIN * errorSum + DGAIN * differentialError;
 
+				//run DC motor CW or CCW based on whether the position is over or under reference position
 				if (errorPosition > 0)
 				{
 					softPwmWrite(MOTOR1, controlledPWM);
@@ -207,22 +212,22 @@ int main() {
 					softPwmWrite(MOTOR2, -controlledPWM);
 					softPwmWrite(MOTOR1, 0);
 				}
-
+				
+				//in last trial, shut down the program after 5sec of control
 				if (count == total - 1) {
 					unsigned int checkTime4last = millis();
 					if (checkTime4last - checkTimeBefore4last >= 5000) {
 						break;
 					}
 				}
-
-				previousError = errorPosition;
-				checkTimeBefore = checkTime;
+				
+				previousError = errorPosition; //leave error history to calculate differential error
+				checkTimeBefore = checkTime; //leave timestamp to check sampling period
 			}
 		}
-		currentPosition = target[count]; // 
-		count++; //for while loop escape condition. End if all trials done
+		currentPosition = target[count]; //after control in each trials, adjust currentPosition as referencePosition of current trial for next trial
+		count++; //for WHILE loop escape condition. End if all trials done
 	}
-
 
 	return 0;
 }
