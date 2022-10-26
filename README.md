@@ -19,15 +19,18 @@ We learned
 
 Using Raspberry PI and LED, we play mole game!!
 
-
-![HW2](https://user-images.githubusercontent.com/92682815/197863731-b70df64c-eff7-486b-b27f-7d2252508d52.gif)
+<p align = "center">
+<img src = "https://user-images.githubusercontent.com/92682815/197863731-b70df64c-eff7-486b-b27f-7d2252508d52.gif">
+</p>
 
 ---
 ## PID Control
 **Motor Control**  
 *Source Code : MidetermProject*  
 
-![image](https://user-images.githubusercontent.com/92682815/197922939-996bd995-cd49-428a-98c9-ff20464ae844.png)
+<p align = "center">
+<img src = "https://user-images.githubusercontent.com/92682815/197922939-996bd995-cd49-428a-98c9-ff20464ae844.png">
+</p>
 
 $$K_p e(t) + K_i \int^t_0 e(t)dt + K_d \frac{de}{dt}$$  
 $K_p, K_i, K_d$ are called gain  
