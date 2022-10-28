@@ -32,7 +32,7 @@ Using Raspberry PI and LED, we play mole game!!
 <img src = "https://user-images.githubusercontent.com/92682815/197922939-996bd995-cd49-428a-98c9-ff20464ae844.png">
 </p>
 
-$$K_p e(t) + K_i \int^t_0 e(t)dt + K_d \frac{de}{dt}$$  
+$$u = K_p e(t) + K_i \int^t_0 e(t)dt + K_d \frac{de}{dt}$$  
 $K_p, K_i, K_d$ are called gain  
 We optimize these by trials and errors
 
@@ -55,5 +55,17 @@ At first, we find the proper P-Gain.
 <img src = "https://user-images.githubusercontent.com/92682815/197971126-821da2ad-4f83-4112-beb7-d6ca57146499.png" width=30%>
 </div>
 
+### Result
+condition
+  * number of trials : 8  
+    *  4 → 6 → 6 → -3 → 3 →-2 → 0 → 1
+ <div>
+ <img src = "https://user-images.githubusercontent.com/92682815/198462525-7418a56b-2020-47ae-b95c-0a083d2b4c1b.png" width = 45%/>
+ <img src = "https://user-images.githubusercontent.com/92682815/198462544-51bab254-a88a-4ce7-b563-aa218e93a18f.png" width = 45%/>
+</div>
 
-DATA 몇개랑 실험결과 정도 
+**ITAE = 11.845**  
+  where ITAE is  
+
+$$ITAE = \int_0^{t_1} t|e_1|dt +\int_{t_1}^{t_2}(t-t_1)|e_2|dt \cdots \int_{t_{n-1}}^{t_n}(t-t_{n-1})|e_n|dt$$
+
